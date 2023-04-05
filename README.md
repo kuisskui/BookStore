@@ -1,6 +1,6 @@
 # BookStore
 ## Business Domain
-The real-world business domain I choose for this project is a book store application. The application will provide a platform for users to browse, purchase, and rent books from the store. The application will also keep track of the store's inventory, book categories, authors, and borrowers.
+The real-world business domain I choose for this project is a book store application. The application will provide a platform for users to browse, purchase, and rent books from the store. The application will also keep track of the store's inventory, book categories, authors, and borrowers
 
 ## Business Activities
 The book store application will provide the following activities to its users
