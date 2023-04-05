@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= tableName %></title>
+</head>
+<body>
+    <table>
+        <h2><%= tableName %></h2>
+        <hr>
+        <thead>
+          <tr>
+            <th>BookID</th>
+            <th>CategoryID</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% data.forEach(function(data) { %>
+            <tr>
+              <td><%= data.BookID %></td>
+              <td><%= data.CategoryID %></td>
+              <td><%= data.Amount %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+</body>
+</html>
