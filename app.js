@@ -65,6 +65,33 @@ app.get('/table', async function (req, res) {
         });
 })
 
+app.use("/insert", function (req, res, next) {
+    const tableName = req.query.tableName
+    const query = req.query
+    delete query.tableName
+    const columnString = Object.keys(query).join(", ")
+    const valueString = Object.values(query).join(", ")     // fix if it is string quote them ''
+    console.log(valueString)
+    databasePool.request()
+        .query(`
+            INSERT INTO ${tableName} (${columnString})
+            VALUES (${valueString})
+        `)
+        .then(() => {
+            next()
+        })
+        .catch((err) => {
+            console.error(`Error querying database: ${err}`);
+            res.sendStatus(500);
+        });
+})
+
+app.get("/delete", function (req, res) {
+    
+})
+app.get("/update", function (req, res) {
+    
+})
 app.listen(port, function () {
     console.log(`Starting http://${server}:${port}`)
 })

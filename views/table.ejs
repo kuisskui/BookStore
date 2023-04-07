@@ -17,11 +17,18 @@
         </h2>
         <hr>
         <thead>
-            <% columnName.forEach(function(data) { %>
-                <tr>
-                    <%= data %>
-                </tr>
-            <% }); %>
+            <tr>
+                <% columnName.forEach(function(data) { %>
+                    <td>
+                        <%= data %>
+                    </td>
+                <% }); %>
+                <td>
+                </td>
+                <td>
+                </td>
+            </tr>
+            
         </thead>
         <tbody>
             <% result.forEach(function(result) { %>
@@ -31,15 +38,29 @@
                             <%= data %>
                         </td>
                     <% }) %>
+                    <td>
+                        <form action="/delete" method="get">
+                            <input type="hidden" name="tableName" value="<%= tableName %>">
+                            <button type="submit" name="<%= columnName[0] %>" value="<%= result[0] %>">delete</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form action="/update" method="get">
+                            <input type="hidden" name="tableName" value="<%= tableName %>">
+                            <button type="submit" name="<%= columnName[0] %>" value="<%= result[0] %>">update</button>
+                        </form>
+                    </td>
                 </tr>
             <% }); %>
         </tbody>
     </table>
-    <form action="<%= tableName %>/insert" method="get">
-        <% tableName.forEach(function(tableName){ %>
-            <label for="<%= tableName %>"><%= tableName %></label>
-            <input type="text" id="<%= tableName %>">
+    <form action="/insert" method="get">
+        <input type="hidden" name="tableName" value="<%= tableName %>">
+        <% columnName.forEach(function(columnName){ %>
+            <label for="<%= columnName %>"><%= columnName %></label>
+            <input type="text" name="<%= columnName %>" required>
         <% }) %>
+        <input type="submit" value="insert" />
     </form>
 </body>
 
