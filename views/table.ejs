@@ -35,6 +35,12 @@
             <% }); %>
         </tbody>
     </table>
+    <form action="<%= tableName %>/insert" method="get">
+        <% tableName.forEach(function(tableName){ %>
+            <label for="<%= tableName %>"><%= tableName %></label>
+            <input type="text" id="<%= tableName %>">
+        <% }) %>
+    </form>
 </body>
 
 </html>
