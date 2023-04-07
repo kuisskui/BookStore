@@ -22,33 +22,47 @@ app.set("view engine", "ejs")
 // app.use("/rentedBooks", rentedBooks)
 // app.use("/soldBooks", soldBooks)
 app.get('/', function (req, res) {
-  databasePool.request()
-    .query(`
+    databasePool.request()
+        .query(`
     SELECT name FROM sys.tables
     WHERE type_desc='USER_TABLE'
     ORDER BY name
   `)
-    .then((result) => {
-        console.log(result) // debug here
-        res.render("app", {data: result.recordset})// point to template here
-    })
-    .catch((err) => {
-      console.error(`Error querying database: ${err}`);
-      res.sendStatus(500);
-    });
+        .then((result) => {
+            // console.log(result) // debug here
+            res.render("app", { data: result.recordset })// point to template here
+        })
+        .catch((err) => {
+            console.error(`Error querying database: ${err}`);
+            res.sendStatus(500);
+        });
 })
 
-app.get('/:table', function (req, res) {
-    databasePool.request()
-    .query(`SELECT * FROM ${req.params.table}`)
-    .then((result) => {
-        // console.log(result) // debug here
-        res.render(`${req.params.table}`, { data: result.recordset, "tableName": `${req.params.table}` })// point to template here
-    })
-    .catch((err) => {
-      console.error(`Error querying database: ${err}`);
-      res.sendStatus(500);
-    });
+app.get('/table', async function (req, res) {
+    // databasePool.request()
+    //     .query(`SELECT * FROM ${req.params.table}`)
+    //     .then((result) => {
+    //         // console.log(result) // debug here
+    //         res.render(`${req.params.table}`, { data: result.recordset, "tableName": `${req.params.table}` })// point to template here
+    //     })
+    //     .catch((err) => {
+    //         console.error(`Error querying database: ${err}`);
+    //         res.sendStatus(500);
+    //     });
+    const tableName = req.query.tableName
+    const result = await databasePool.request().query(`SELECT * FROM ${tableName}`);
+    const columnName = await databasePool.request().query(`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${tableName}'`);
+
+    Promise.all([result, columnName])
+        .then((results) => {
+            const result = Array(...results[0].recordset.values());
+            const columnName = Array(...results[1].recordset.values());
+            res.render("table", { data: result, "tableName": tableName, "columnName": columnName });
+        })
+        .catch((err) => {
+            console.error(`Error querying database: ${err}`);
+            res.sendStatus(500);
+        });
 })
 
 app.listen(port, function () {

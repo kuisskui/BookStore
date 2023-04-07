@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= tableName %>
+    </title>
+</head>
+
+<body>
+    <table>
+        <h2>
+            <%= tableName %>
+        </h2>
+        <hr>
+        <thead>
+            <% columnName.forEach(function(data) { %>
+                <tr>
+                    <%= data.COLUMN_NAME %>
+                </tr>
+                <% }); %>
+        </thead>
+        <tbody>
+            <% data.forEach(function(data) { %>
+                <tr>
+                    <% Object.values(data).forEach(function(v) { %>
+                        <td><%= v %></td>
+                    <% }) %>
+                  </tr>
+                <% }); %>
+        </tbody>
+    </table>
+</body>
+
+</html>
