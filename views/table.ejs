@@ -19,18 +19,20 @@
         <thead>
             <% columnName.forEach(function(data) { %>
                 <tr>
-                    <%= data.COLUMN_NAME %>
+                    <%= data %>
                 </tr>
-                <% }); %>
+            <% }); %>
         </thead>
         <tbody>
-            <% data.forEach(function(data) { %>
+            <% result.forEach(function(result) { %>
                 <tr>
-                    <% Object.values(data).forEach(function(v) { %>
-                        <td><%= v %></td>
+                    <% result.forEach(function(data){ %>
+                        <td>
+                            <%= data %>
+                        </td>
                     <% }) %>
-                  </tr>
-                <% }); %>
+                </tr>
+            <% }); %>
         </tbody>
     </table>
 </body>

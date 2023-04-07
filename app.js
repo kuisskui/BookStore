@@ -50,14 +50,14 @@ app.get('/table', async function (req, res) {
     //         res.sendStatus(500);
     //     });
     const tableName = req.query.tableName
-    const result = await databasePool.request().query(`SELECT * FROM ${tableName}`);
+    const queryResult = await databasePool.request().query(`SELECT * FROM ${tableName}`);
     const columnName = await databasePool.request().query(`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${tableName}'`);
 
-    Promise.all([result, columnName])
+    Promise.all([queryResult, columnName])
         .then((results) => {
-            const result = Array(...results[0].recordset.values());
-            const columnName = Array(...results[1].recordset.values());
-            res.render("table", { data: result, "tableName": tableName, "columnName": columnName });
+            const result = results[0].recordset.map(object => Object.values(object))
+            const columnName = results[1].recordset.map(object => Object.values(object))
+            res.render("table", {"tableName": tableName, "columnName": columnName, "result": result});
         })
         .catch((err) => {
             console.error(`Error querying database: ${err}`);
