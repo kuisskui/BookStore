@@ -18,7 +18,7 @@
         <tbody>
           <% data.forEach(function(data) { %>
             <tr>
-              <td><a href="/<%= data.name %>"><%= data.name %></a></td>
+              <td><a href="/table?tableName=<%= data.name %>"><%= data.name %></a></td>
             </tr>
           <% }); %>
         </tbody>

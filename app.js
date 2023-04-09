@@ -5,14 +5,6 @@ const databasePool = require("./database/mssql")
 const port = 8000
 const server = "127.0.0.1"
 
-const authors = require("./routers/authors")
-const bookCategories = require("./routers/authors")
-const books = require("./routers/books")
-const borrowers = require("./routers/borrowers")
-const categories = require("./routers/categories")
-const rentedBooks = require("./routers/rentedBooks")
-const soldBooks = require("./routers/soldBooks")
-
 app.set("view engine", "ejs")
 
 app.get('/', function (req, res) {
