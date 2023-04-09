@@ -144,23 +144,44 @@ app.get("/update", async function (req, res) {
 
     res.render("update", {tableName: tableName, columnName: columnName, oldData: oldData, columnCount:columnCount})
 })
-app.get("/update/process", async function (req, res) {
+app.use("/update/process", async function (req, res, next) {
     const tableName = req.query.tableName
     let query = req.query
     delete query.tableName
     delete query.action
 
-    
+    const dataType = await databasePool.request()
+        .query(`
+        SELECT COLUMN_NAME, DATA_TYPE
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = '${tableName}';    
+    `)
+    const dataTypeObject = createDataTypeObject(dataType.recordset)
+
+    let queryString = []
+    for (const p in query) {
+        const type = ["int", "decimal"]
+        const value = query[p]
+        if (type.includes(dataTypeObject[p])) {
+            queryString.push(`${p} = ${value}`)
+        }
+        else {
+            queryString.push(`${p} = '${value}'`)
+        }
+    }
+
+    queryString = queryString.join(', ')
 
     await databasePool.request().query(`
         UPDATE ${tableName}
-        SET first_name = 'John', last_name = 'Doe'
+        SET ${queryString}
         WHERE ${Object.keys(query)[0]} = ${Object.values(query)[0]};
     `)
-    console.log(req.query)
-    res.send('hello')
+    
+    res.redirect(`/table?tableName=${tableName}`)
 
 })
+
 app.listen(port, function () {
     console.log(`Starting http://${server}:${port}`)
 })
