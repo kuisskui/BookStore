@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>update</title>
+</head>
+
+<body>
+    <h2>
+        <%= tableName %>
+    </h2>
+    <hr>
+    <h3>update</h3>
+    <tr>
+        <form action="/update/process" method="get">
+            <label for="<%= columnName[0] %>">
+                <%= columnName[0] %>
+            </label>
+            <input type="text" name="<%= columnName[0] %>" value="<%= oldData[0] %>" disabled>
+            <input type="text" name="<%= columnName[0] %>" value="<%= oldData[0] %>" hidden>
+            
+            <% for (var i=1; i < columnCount; i++ ){ %>
+                <label for="<%= columnName[i] %>">
+                    <%= columnName[i] %>
+                </label>
+                <input type="text" name="<%= columnName[i] %>" value="<%= oldData[i] %>">
+            <% } %>
+            <input type="text" name="action" value="1" hidden>
+            <input type="text" name="tableName" value="<%= tableName %>" hidden>
+            <button type="submit"> update </button>
+        </form>
+    </tr>
+
+
+
+</body>
+
+</html>

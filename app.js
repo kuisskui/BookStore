@@ -1,5 +1,5 @@
 const express = require("express")
-const { columns } = require("mssql")
+const { columns, UniqueIdentifier } = require("mssql")
 const app = express()
 const databasePool = require("./database/mssql")
 const port = 8000
@@ -34,8 +34,8 @@ app.get('/', function (req, res) {
 
 app.get("/table", async function (req, res) {
     const tableName = req.query.tableName
-    const queryResult = await (await databasePool.request().query(`SELECT * FROM ${tableName}`))
-    const columnName = await (await databasePool.request().query(`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${tableName}'`))
+    const queryResult = await (databasePool.request().query(`SELECT * FROM ${tableName}`))
+    const columnName = await (databasePool.request().query(`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${tableName}'`))
 
     Promise.all([queryResult, columnName])
         .then((results) => {
@@ -113,9 +113,52 @@ app.get("/insert", async function (req, res) {
 })
 
 app.get("/delete", function (req, res) {
-
+    const tableName = req.query.tableName
+    const query = req.query
+    delete query.tableName
+    databasePool.request()
+        .query(`
+            DELETE FROM ${tableName}
+            WHERE ${Object.keys(query)[0]}=${Object.values(query)[0]};        
+        `)
+        .then(() => {
+            res.redirect(req.headers.referer)
+        })
+        .catch((err) => {
+            console.error(`Error querying database: ${err}`);
+            res.sendStatus(500);
+        });
 })
-app.get("/update", function (req, res) {
+app.get("/update", async function (req, res) {
+    const tableName = req.query.tableName
+    let query = req.query
+    delete query.tableName
+
+    let columnName = await databasePool.request().query(`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${tableName}'`)
+    columnName = columnName.recordset.map(object => Object.values(object)[0])
+
+    let columnCount = columnName.length
+
+    let oldData = await databasePool.request().query(`SELECT * FROM ${tableName} WHERE ${Object.keys(query)[0]}=${Object.values(query)[0]}`)
+    oldData = oldData.recordset.map(object => Object.values(object))[0]
+
+    res.render("update", {tableName: tableName, columnName: columnName, oldData: oldData, columnCount:columnCount})
+})
+app.get("/update/process", async function (req, res) {
+    const tableName = req.query.tableName
+    let query = req.query
+    delete query.tableName
+    delete query.action
+
+    
+
+    await databasePool.request().query(`
+        UPDATE ${tableName}
+        SET first_name = 'John', last_name = 'Doe'
+        WHERE ${Object.keys(query)[0]} = ${Object.values(query)[0]};
+    `)
+    console.log(req.query)
+    res.send('hello')
 
 })
 app.listen(port, function () {
