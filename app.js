@@ -1,5 +1,4 @@
 const express = require("express")
-const { columns, UniqueIdentifier } = require("mssql")
 const app = express()
 const databasePool = require("./database/mssql")
 const port = 8000
@@ -10,10 +9,10 @@ app.set("view engine", "ejs")
 app.get('/', function (req, res) {
     databasePool.request()
         .query(`
-    SELECT name FROM sys.tables
-    WHERE type_desc='USER_TABLE'
-    ORDER BY name
-  `)
+            SELECT name FROM sys.tables
+            WHERE type_desc='USER_TABLE'
+            ORDER BY name
+        `)                              // query all table name form database
         .then((result) => {
             // console.log(result) // debug here
             res.render("app", { data: result.recordset })// point to template here
@@ -24,15 +23,21 @@ app.get('/', function (req, res) {
         });
 })
 
-app.get("/table", async function (req, res) {
+app.get("/table", function (req, res) {
     const tableName = req.query.tableName
-    const queryResult = await (databasePool.request().query(`SELECT * FROM ${tableName}`))
-    const columnName = await (databasePool.request().query(`SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${tableName}'`))
+    let result = databasePool.request()
+        .query(`
+            SELECT * FROM ${tableName}
+        `)
+    let columnName = databasePool.request()
+        .query(`
+            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '${tableName}'
+        `)
 
-    Promise.all([queryResult, columnName])
+    Promise.all([result, columnName])
         .then((results) => {
-            const result = results[0].recordset.map(object => Object.values(object))
-            const columnName = results[1].recordset.map(object => Object.values(object))
+            result = results[0].recordset.map(object => Object.values(object))
+            columnName = results[1].recordset.map(object => Object.values(object))
             res.render("table", { "tableName": tableName, "columnName": columnName, "result": result });
         })
         .catch((err) => {
@@ -40,6 +45,7 @@ app.get("/table", async function (req, res) {
             res.sendStatus(500);
         });
 })
+
 function createDataTypeObject(dataType) {
     dataType = dataType.map(object => Object.values(object))
     dataTypeObject = {}
@@ -50,6 +56,7 @@ function createDataTypeObject(dataType) {
     }
     return dataTypeObject
 }
+
 function writeQueryString(dataType, query) {
     dataTypeObject = createDataTypeObject(dataType)
     let queryString = []
@@ -71,24 +78,18 @@ app.get("/insert", async function (req, res) {
     const query = req.query
     delete query.tableName
 
-    const dataType = databasePool.request()
-        .query(`
-        SELECT COLUMN_NAME, DATA_TYPE
-        FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_NAME = '${tableName}';    
-    `)
-
     let columnString;
     let valueString;
-    await Promise.all([dataType])
-        .then((results) => {
-            columnString = Object.keys(query).join(", ")
-            valueString = writeQueryString(results[0].recordset, query)
-        })
-        .catch((err) => {
-            console.error(`Error querying database: ${err}`);
-            res.sendStatus(500);
-        });
+
+    const dataType = await databasePool.request()
+        .query(`
+            SELECT COLUMN_NAME, DATA_TYPE
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = '${tableName}';    
+        `)
+    
+    columnString = Object.keys(query).join(", ")
+    valueString = writeQueryString(dataType.recordset, query)
 
     databasePool.request()
         .query(`
@@ -121,6 +122,7 @@ app.get("/delete", function (req, res) {
             res.sendStatus(500);
         });
 })
+
 app.get("/update", async function (req, res) {
     const tableName = req.query.tableName
     let query = req.query
@@ -134,8 +136,9 @@ app.get("/update", async function (req, res) {
     let oldData = await databasePool.request().query(`SELECT * FROM ${tableName} WHERE ${Object.keys(query)[0]}=${Object.values(query)[0]}`)
     oldData = oldData.recordset.map(object => Object.values(object))[0]
 
-    res.render("update", {tableName: tableName, columnName: columnName, oldData: oldData, columnCount:columnCount})
+    res.render("update", { tableName: tableName, columnName: columnName, oldData: oldData, columnCount: columnCount })
 })
+
 app.use("/update/process", async function (req, res, next) {
     const tableName = req.query.tableName
     let query = req.query
@@ -148,6 +151,7 @@ app.use("/update/process", async function (req, res, next) {
         FROM INFORMATION_SCHEMA.COLUMNS
         WHERE TABLE_NAME = '${tableName}';    
     `)
+
     const dataTypeObject = createDataTypeObject(dataType.recordset)
 
     let queryString = []
@@ -169,7 +173,7 @@ app.use("/update/process", async function (req, res, next) {
         SET ${queryString}
         WHERE ${Object.keys(query)[0]} = ${Object.values(query)[0]};
     `)
-    
+
     res.redirect(`/table?tableName=${tableName}`)
 
 })
